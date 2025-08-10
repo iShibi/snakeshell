@@ -8,7 +8,7 @@ readme = "README.md"
 homepage = "https://github.com/iShibi/snakeshell#readme"
 repository = "https://github.com/iShibi/snakeshell"
 license = "MIT"
-keywords = ["rust", "crossterm", "tui", "terminal", "game", "cli", "snake"]
+keywords = ["crossterm", "terminal", "game", "cli", "snake"]
 categories = ["games"]
 
 [dependencies]
