@@ -1,0 +1,16 @@
+[package]
+name = "snakeshell"
+version = "0.1.0"
+edition = "2024"
+description = "The classic Snake game but in a shell environment"
+authors = ["Shubham Parihar <shubhamparihar391@gmail.com>"]
+readme = "README.md"
+homepage = "https://github.com/iShibi/snakeshell#readme"
+repository = "https://github.com/iShibi/snakeshell"
+license = "MIT"
+keywords = ["rust", "crossterm", "tui", "terminal", "game", "cli", "snake"]
+categories = ["games"]
+
+[dependencies]
+crossterm = "0.29.0"
+rand = "0.9.2"
