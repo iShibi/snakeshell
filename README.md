@@ -6,11 +6,11 @@
 
 ### Game Controls
 
-| Key       | Action     |
-| --------- | ---------- |
-| **W**     | Move Up    |
-| **A**     | Move Left  |
-| **S**     | Move Down  |
-| **D**     | Move Right |
-| **Enter** | Confirm    |
-| **Esc**   | Exit       |
+| **Key** | **Action** |
+| :-----: | :--------: |
+|   `W`   |  Move Up   |
+|   `A`   | Move Left  |
+|   `S`   | Move Down  |
+|   `D`   | Move Right |
+| `Enter` |  Confirm   |
+|  `Esc`  |    Exit    |
