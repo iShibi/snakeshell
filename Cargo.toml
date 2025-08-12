@@ -1,6 +1,6 @@
 [package]
 name = "snakeshell"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 description = "The classic Snake game but in a shell environment"
 authors = ["Shubham Parihar <shubhamparihar391@gmail.com>"]
