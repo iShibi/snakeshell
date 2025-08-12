@@ -163,7 +163,7 @@ fn run_game_loop(cols: u16, rows: u16, stdout: &mut io::Stdout) -> io::Result<()
 						MoveTo(snake.position.x, snake.position.y),
 						Print("*".green()),
 						MoveTo(food_position.x, food_position.y),
-						Print("@".red().slow_blink()),
+						Print("@".red()),
 					)?;
 				} else {
 					queue!(
@@ -173,7 +173,7 @@ fn run_game_loop(cols: u16, rows: u16, stdout: &mut io::Stdout) -> io::Result<()
 						MoveTo(snake.position.x, snake.position.y),
 						Print("*".green()),
 						MoveTo(food_position.x, food_position.y),
-						Print("@".red().slow_blink()),
+						Print("@".red()),
 					)?;
 				}
 				stdout.flush()?;
@@ -198,7 +198,7 @@ fn run_game_loop(cols: u16, rows: u16, stdout: &mut io::Stdout) -> io::Result<()
 					queue!(
 						stdout,
 						MoveTo(center_x, center_y),
-						SetAttributes(Attributes::none().with(Attribute::Bold).with(Attribute::NoBlink)),
+						SetAttributes(Attributes::none().with(Attribute::Bold)),
 						Print(game_over),
 						SetAttributes(Attributes::none().with(Attribute::NormalIntensity)),
 						MoveTo(center_x, center_y + 4),
