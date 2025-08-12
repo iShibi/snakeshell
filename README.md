@@ -9,9 +9,9 @@
 Here are the steps to install `snakeshell` game in your terminal:
 
 1. Download the Rust language from https://www.rust-lang.org/tools/install
-2. Run the following command in ternminal to install snakeshell:
+2. Run the following command in terminal to install snakeshell:
 
-```sh
+```cmd
 cargo install snakeshell
 ```
 
