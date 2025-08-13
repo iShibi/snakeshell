@@ -36,8 +36,20 @@ fn main() -> io::Result<()> {
 	Ok(())
 }
 
+#[derive(Debug, Clone, Copy)]
+struct GameState {
+	pub score: u32,
+}
+
+impl Default for GameState {
+	fn default() -> Self {
+		Self { score: 0 }
+	}
+}
+
 fn run_game_loop(cols: u16, rows: u16, stdout: &mut io::Stdout) -> io::Result<()> {
-	let mut score = 0;
+	// let mut score = 0;
+	let mut game_state = GameState::default();
 	let mut rng = rand::rng();
 	let mut food_position = Vector2D {
 		x: rng.random_range(0..cols),
@@ -91,7 +103,7 @@ fn run_game_loop(cols: u16, rows: u16, stdout: &mut io::Stdout) -> io::Result<()
 						break 'game_loop;
 					} else if is_game_over && current_selection == 0 {
 						snake = Snake::default();
-						score = 0;
+						game_state.score = 0;
 						is_game_over = false;
 						current_selection = 0;
 						food_position = Vector2D {
@@ -145,7 +157,7 @@ fn run_game_loop(cols: u16, rows: u16, stdout: &mut io::Stdout) -> io::Result<()
 					continue;
 				}
 				if food_position == snake.position {
-					score += 1;
+					game_state.score += 1;
 					snake.size += 1;
 					snake.history.increase_capacity(snake.size as usize);
 					food_position = Vector2D {
@@ -153,13 +165,14 @@ fn run_game_loop(cols: u16, rows: u16, stdout: &mut io::Stdout) -> io::Result<()
 						y: rng.random_range(0..rows),
 					};
 				}
+				let score_ui = format!("Score: {score}", score = game_state.score);
 				if let Some(Vector2D { x, y }) = maybe_tail {
 					queue!(
 						stdout,
 						MoveTo(x, y),
 						Print(" "),
-						MoveTo(cols - format!("Score: {score}").len() as u16, 0),
-						Print(format!("Score: {score}")),
+						MoveTo(cols - score_ui.len() as u16, 0),
+						Print(score_ui),
 						MoveTo(snake.position.x, snake.position.y),
 						Print("*".green()),
 						MoveTo(food_position.x, food_position.y),
@@ -168,8 +181,8 @@ fn run_game_loop(cols: u16, rows: u16, stdout: &mut io::Stdout) -> io::Result<()
 				} else {
 					queue!(
 						stdout,
-						MoveTo(cols - format!("Score: {score}").len() as u16, 0),
-						Print(format!("Score: {score}")),
+						MoveTo(cols - score_ui.len() as u16, 0),
+						Print(score_ui),
 						MoveTo(snake.position.x, snake.position.y),
 						Print("*".green()),
 						MoveTo(food_position.x, food_position.y),
