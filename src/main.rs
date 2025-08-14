@@ -36,19 +36,26 @@ fn main() -> io::Result<()> {
 	Ok(())
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 struct GameState {
 	pub score: u32,
+	pub is_game_over: bool,
+	pub snake: Snake,
+	pub current_selection: u8,
 }
 
 impl Default for GameState {
 	fn default() -> Self {
-		Self { score: 0 }
+		Self {
+			score: 0,
+			is_game_over: false,
+			snake: Snake::default(),
+			current_selection: 0,
+		}
 	}
 }
 
 fn run_game_loop(cols: u16, rows: u16, stdout: &mut io::Stdout) -> io::Result<()> {
-	// let mut score = 0;
 	let mut game_state = GameState::default();
 	let mut rng = rand::rng();
 	let mut food_position = Vector2D {
@@ -63,49 +70,43 @@ fn run_game_loop(cols: u16, rows: u16, stdout: &mut io::Stdout) -> io::Result<()
 			}
 		}
 	});
-	let mut snake = Snake::default();
-	let mut is_game_over = false;
-	let mut last_tick = Instant::now();
-	let mut current_selection = 0;
 	let game_over = "GAME OVER";
 	let restart = "Restart";
 	let exit = "Exit";
+	let mut last_tick = Instant::now();
 	'game_loop: loop {
 		if let Ok(key_code) = reciever.try_recv() {
 			match key_code {
 				KeyCode::Esc => break,
 				KeyCode::Char('w') => {
-					if !is_game_over && snake.direction != Direction::South {
-						snake.direction = Direction::North;
+					if !game_state.is_game_over && game_state.snake.direction != Direction::South {
+						game_state.snake.direction = Direction::North;
 					} else {
-						current_selection = 0;
+						game_state.current_selection = 0;
 					}
 				}
 				KeyCode::Char('d') => {
-					if !is_game_over && snake.direction != Direction::West {
-						snake.direction = Direction::East;
+					if !game_state.is_game_over && game_state.snake.direction != Direction::West {
+						game_state.snake.direction = Direction::East;
 					}
 				}
 				KeyCode::Char('s') => {
-					if !is_game_over && snake.direction != Direction::North {
-						snake.direction = Direction::South;
+					if !game_state.is_game_over && game_state.snake.direction != Direction::North {
+						game_state.snake.direction = Direction::South;
 					} else {
-						current_selection = 1;
+						game_state.current_selection = 1;
 					}
 				}
 				KeyCode::Char('a') => {
-					if !is_game_over && snake.direction != Direction::East {
-						snake.direction = Direction::West;
+					if !game_state.is_game_over && game_state.snake.direction != Direction::East {
+						game_state.snake.direction = Direction::West;
 					}
 				}
 				KeyCode::Enter => {
-					if is_game_over && current_selection == 1 {
+					if game_state.is_game_over && game_state.current_selection == 1 {
 						break 'game_loop;
-					} else if is_game_over && current_selection == 0 {
-						snake = Snake::default();
-						game_state.score = 0;
-						is_game_over = false;
-						current_selection = 0;
+					} else if game_state.is_game_over && game_state.current_selection == 0 {
+						game_state = GameState::default();
 						food_position = Vector2D {
 							x: rng.random_range(0..cols),
 							y: rng.random_range(0..rows),
@@ -124,42 +125,46 @@ fn run_game_loop(cols: u16, rows: u16, stdout: &mut io::Stdout) -> io::Result<()
 			}
 		}
 		if last_tick.elapsed() >= Duration::from_millis(100) {
-			if !is_game_over {
-				let current_position = snake.position.clone();
-				let maybe_tail = snake.history.push(current_position);
-				match snake.direction {
+			if !game_state.is_game_over {
+				let current_position = game_state.snake.position.clone();
+				let maybe_tail = game_state.snake.history.push(current_position);
+				match game_state.snake.direction {
 					Direction::North => {
-						if snake.position.y == 0 {
-							snake.position.y = rows - 1;
+						if game_state.snake.position.y == 0 {
+							game_state.snake.position.y = rows - 1;
 						} else {
-							snake.position.y -= 1;
+							game_state.snake.position.y -= 1;
 						}
 					}
 					Direction::East => {
-						snake.position.x = (snake.position.x + 1) % cols;
+						game_state.snake.position.x = (game_state.snake.position.x + 1) % cols;
 					}
 					Direction::South => {
-						snake.position.y = (snake.position.y + 1) % rows;
+						game_state.snake.position.y = (game_state.snake.position.y + 1) % rows;
 					}
 					Direction::West => {
-						if snake.position.x == 0 {
-							snake.position.x = cols - 1;
+						if game_state.snake.position.x == 0 {
+							game_state.snake.position.x = cols - 1;
 						} else {
-							snake.position.x -= 1;
+							game_state.snake.position.x -= 1;
 						}
 					}
 				}
-				if snake.history.contains(&snake.position) {
+				if game_state.snake.history.contains(&game_state.snake.position) {
 					print!("\x07"); // Makes a bell sound
-					is_game_over = true;
-					queue!(stdout, MoveTo(snake.position.x, snake.position.y), Print("!".red()))?;
+					game_state.is_game_over = true;
+					queue!(
+						stdout,
+						MoveTo(game_state.snake.position.x, game_state.snake.position.y),
+						Print("!".red())
+					)?;
 					stdout.flush()?;
 					continue;
 				}
-				if food_position == snake.position {
+				if food_position == game_state.snake.position {
 					game_state.score += 1;
-					snake.size += 1;
-					snake.history.increase_capacity(snake.size as usize);
+					game_state.snake.size += 1;
+					game_state.snake.history.increase_capacity(game_state.snake.size as usize);
 					food_position = Vector2D {
 						x: rng.random_range(0..cols),
 						y: rng.random_range(0..rows),
@@ -173,7 +178,7 @@ fn run_game_loop(cols: u16, rows: u16, stdout: &mut io::Stdout) -> io::Result<()
 						Print(" "),
 						MoveTo(cols - score_ui.len() as u16, 0),
 						Print(score_ui),
-						MoveTo(snake.position.x, snake.position.y),
+						MoveTo(game_state.snake.position.x, game_state.snake.position.y),
 						Print("*".green()),
 						MoveTo(food_position.x, food_position.y),
 						Print("@".red()),
@@ -183,7 +188,7 @@ fn run_game_loop(cols: u16, rows: u16, stdout: &mut io::Stdout) -> io::Result<()
 						stdout,
 						MoveTo(cols - score_ui.len() as u16, 0),
 						Print(score_ui),
-						MoveTo(snake.position.x, snake.position.y),
+						MoveTo(game_state.snake.position.x, game_state.snake.position.y),
 						Print("*".green()),
 						MoveTo(food_position.x, food_position.y),
 						Print("@".red()),
@@ -192,7 +197,7 @@ fn run_game_loop(cols: u16, rows: u16, stdout: &mut io::Stdout) -> io::Result<()
 				stdout.flush()?;
 			} else {
 				let (center_x, center_y) = (((cols - game_over.len() as u16) / 2) - 1, (rows / 2) - 1);
-				if current_selection == 0 {
+				if game_state.current_selection == 0 {
 					queue!(
 						stdout,
 						MoveTo(center_x, center_y),
@@ -207,7 +212,7 @@ fn run_game_loop(cols: u16, rows: u16, stdout: &mut io::Stdout) -> io::Result<()
 						Show,
 						SetCursorStyle::SteadyBlock
 					)?;
-				} else if current_selection == 1 {
+				} else if game_state.current_selection == 1 {
 					queue!(
 						stdout,
 						MoveTo(center_x, center_y),
